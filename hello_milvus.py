@@ -6,7 +6,9 @@
 # 5. search, query, and hybrid search on entities
 # 6. delete entities by PK
 # 7. drop collection
-import time
+import time,os
+from Embedding_vec import Embedding_vec
+from Photo import Photo
 
 import numpy as np
 from pymilvus import (
@@ -18,7 +20,7 @@ from pymilvus import (
 
 fmt = "\n=== {:30} ===\n"
 search_latency_fmt = "search latency = {:.4f}s"
-num_entities, dim = 3000, 8
+num_entities, dim = 16254, 1000
 
 #################################################################################
 # 1. connect to Milvus
@@ -49,14 +51,17 @@ print(f"Does collection hello_milvus exist in Milvus: {has}")
 # +-+------------+------------+------------------+------------------------------+
 fields = [
     FieldSchema(name="pk", dtype=DataType.VARCHAR, is_primary=True, auto_id=False, max_length=100),
-    FieldSchema(name="random", dtype=DataType.DOUBLE),
-    FieldSchema(name="embeddings", dtype=DataType.FLOAT_VECTOR, dim=dim)
+    FieldSchema(name="lat", dtype=DataType.DOUBLE),
+    FieldSchema(name="lng", dtype=DataType.DOUBLE),
+    FieldSchema(name="pan", dtype=DataType.DOUBLE),
+    FieldSchema(name="embeddings", dtype=DataType.FLOAT_VECTOR, dim=dim),
+    
 ]
 
-schema = CollectionSchema(fields, "hello_milvus is the simplest demo to introduce the APIs")
+schema = CollectionSchema(fields, "picture_embedding has lat, lng, pan")
 
-print(fmt.format("Create collection `hello_milvus`"))
-hello_milvus = Collection("hello_milvus", schema, consistency_level="Strong")
+print(fmt.format("Create collection `picture_embedding`"))
+picture_embedding = Collection("picture_embedding", schema, consistency_level="Strong")
 
 ################################################################################
 # 3. insert data
@@ -69,21 +74,38 @@ hello_milvus = Collection("hello_milvus", schema, consistency_level="Strong")
 
 print(fmt.format("Start inserting entities"))
 rng = np.random.default_rng(seed=19530)
+
+lat_list = []
+lng_list = []
+pan_list = []
+embedding_vector_list = []
+folder_path = './embedding_vector/'
+for i,filename in enumerate(os.listdir(folder_path)):
+    if (i%100 == 0):
+        print(i)
+    
+    vc = Embedding_vec(filename)
+    lat_list.append(vc.lat)
+    lng_list.append(vc.lng)
+    pan_list.append(vc.pan)
+    embedding_vector_list.append(vc.embedding_vector)
+
 entities = [
-    # provide the pk field because `auto_id` is set to False
     [str(i) for i in range(num_entities)],
-    rng.random(num_entities).tolist(),  # field random, only supports list
-    rng.random((num_entities, dim)),    # field embeddings, supports numpy.ndarray and list
+    lat_list,
+    lng_list,
+    pan_list,
+    embedding_vector_list,  # field random, only supports list
 ]
 
-insert_result = hello_milvus.insert(entities)
+insert_result = picture_embedding.insert(entities)
 
-hello_milvus.flush()
-print(f"Number of entities in Milvus: {hello_milvus.num_entities}")  # check the num_entities
+picture_embedding.flush()
+print(f"Number of entities in Milvus: {picture_embedding.num_entities}")  # check the num_entities
 
 ################################################################################
 # 4. create index
-# We are going to create an IVF_FLAT index for hello_milvus collection.
+# We are going to create an IVF_FLAT index for picture_embedding collection.
 # create_index() can only be applied to `FloatVector` and `BinaryVector` fields.
 print(fmt.format("Start Creating index IVF_FLAT"))
 index = {
@@ -92,7 +114,7 @@ index = {
     "params": {"nlist": 128},
 }
 
-hello_milvus.create_index("embeddings", index)
+picture_embedding.create_index("embeddings", index)
 
 ################################################################################
 # 5. search, query, and hybrid search
@@ -102,26 +124,27 @@ hello_milvus.create_index("embeddings", index)
 # - hybrid search based on vector similarity and scalar filtering.
 #
 
-# Before conducting a search or a query, you need to load the data in `hello_milvus` into memory.
+# Before conducting a search or a query, you need to load the data in `picture_embedding` into memory.
 print(fmt.format("Start loading"))
-hello_milvus.load()
+picture_embedding.load()
 
 # -----------------------------------------------------------------------------
 # search based on vector similarity
 print(fmt.format("Start searching based on vector similarity"))
-vectors_to_search = entities[-1][-2:]
+vectors_to_search = Photo('./uploads/example.png').transform_embedding_vector()
+
 search_params = {
     "metric_type": "L2",
     "params": {"nprobe": 10},
 }
 
 start_time = time.time()
-result = hello_milvus.search(vectors_to_search, "embeddings", search_params, limit=3, output_fields=["random"])
+result = picture_embedding.search(vectors_to_search, "embeddings", search_params, limit=3)
 end_time = time.time()
 
 for hits in result:
     for hit in hits:
-        print(f"hit: {hit}, random field: {hit.entity.get('random')}")
+        print(f"hit: {hit}")
 print(search_latency_fmt.format(end_time - start_time))
 
 # -----------------------------------------------------------------------------
@@ -129,7 +152,7 @@ print(search_latency_fmt.format(end_time - start_time))
 print(fmt.format("Start querying with `random > 0.5`"))
 
 start_time = time.time()
-result = hello_milvus.query(expr="random > 0.5", output_fields=["random", "embeddings"])
+result = picture_embedding.query(expr="random > 0.5", output_fields=["random", "embeddings"])
 end_time = time.time()
 
 print(f"query result:\n-{result[0]}")
@@ -137,8 +160,8 @@ print(search_latency_fmt.format(end_time - start_time))
 
 # -----------------------------------------------------------------------------
 # pagination
-r1 = hello_milvus.query(expr="random > 0.5", limit=4, output_fields=["random"])
-r2 = hello_milvus.query(expr="random > 0.5", offset=1, limit=3, output_fields=["random"])
+r1 = picture_embedding.query(expr="random > 0.5", limit=4, output_fields=["random"])
+r2 = picture_embedding.query(expr="random > 0.5", offset=1, limit=3, output_fields=["random"])
 print(f"query pagination(limit=4):\n\t{r1}")
 print(f"query pagination(offset=1, limit=3):\n\t{r2}")
 
@@ -148,7 +171,7 @@ print(f"query pagination(offset=1, limit=3):\n\t{r2}")
 print(fmt.format("Start hybrid searching with `random > 0.5`"))
 
 start_time = time.time()
-result = hello_milvus.search(vectors_to_search, "embeddings", search_params, limit=3, expr="random > 0.5", output_fields=["random"])
+result = picture_embedding.search(vectors_to_search, "embeddings", search_params, limit=3, expr="random > 0.5", output_fields=["random"])
 end_time = time.time()
 
 for hits in result:
@@ -164,17 +187,17 @@ ids = insert_result.primary_keys
 expr = f'pk in ["{ids[0]}" , "{ids[1]}"]'
 print(fmt.format(f"Start deleting with expr `{expr}`"))
 
-result = hello_milvus.query(expr=expr, output_fields=["random", "embeddings"])
+result = picture_embedding.query(expr=expr, output_fields=["random", "embeddings"])
 print(f"query before delete by expr=`{expr}` -> result: \n-{result[0]}\n-{result[1]}\n")
 
-hello_milvus.delete(expr)
+picture_embedding.delete(expr)
 
-result = hello_milvus.query(expr=expr, output_fields=["random", "embeddings"])
+result = picture_embedding.query(expr=expr, output_fields=["random", "embeddings"])
 print(f"query after delete by expr=`{expr}` -> result: {result}\n")
 
 
 ###############################################################################
 # 7. drop collection
-# Finally, drop the hello_milvus collection
-print(fmt.format("Drop collection `hello_milvus`"))
-utility.drop_collection("hello_milvus")
+# Finally, drop the picture_embedding collection
+print(fmt.format("Drop collection `picture_embedding`"))
+utility.drop_collection("picture_embedding")
