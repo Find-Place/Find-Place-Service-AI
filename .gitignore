@@ -4,3 +4,4 @@ __pycache__/
 test.py
 milvus.ipynb
 hello_milvus.py
+volumes/
