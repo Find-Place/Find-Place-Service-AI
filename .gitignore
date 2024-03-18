@@ -2,3 +2,5 @@ embedding_vector/
 origin_file.py
 __pycache__/
 test.py
+milvus.ipynb
+hello_milvus.py
