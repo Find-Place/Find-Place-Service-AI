@@ -1,5 +1,8 @@
+print("Importing module...")
 from model.Photo import Photo
-from db_excute import create_db, drop, connect_db
+from model.Db import Db
+# print("import db_excute")
+# from db_excute import create_db, drop, connect_db
 import webbrowser
 
 def generate_google_maps_url(lat, lng):
@@ -17,12 +20,18 @@ def open_url_in_default_browser(url):
     webbrowser.open(url)
 
 
-db = connect_db()
+database = Db().database
+database.load()
 
-uploading_photo = Photo('example.png')
+print("connect db")
+db = database
+
+print("uploading photo")
+uploading_photo = Photo('jeongmun.png')
 
 print("Start to serach most smilarilty vector")
 lat,lng = uploading_photo.search_similar_vector(db)
+
 
 google_maps_url = generate_google_maps_url(lat,lng)
 open_url_in_default_browser(google_maps_url)

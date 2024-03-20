@@ -3,17 +3,22 @@ from model.Embedding_vec import Embedding_vec
 # from Photo import Photo
 from pymilvus import (
     connections,
+    db,
     utility,
     FieldSchema, CollectionSchema, DataType,
     Collection,
 )
-
 
 class Db:
     # 16254, 1000
     def __init__(self, num_entities=16254, dim=1000) -> None:    
         self.num_entities, self.dim = num_entities, dim
         connections.connect("default", host="localhost", port="19530")
+        has = utility.has_collection("picture_embedding")
+        if has:
+            self.database = Collection("picture_embedding")
+        else:
+            print("Create databsae first")
 
 
     # db schema 설정
