@@ -1,7 +1,5 @@
 embedding_vector/
-origin_file.py
+origin/
 __pycache__/
 test.py
-milvus.ipynb
-hello_milvus.py
 volumes/
