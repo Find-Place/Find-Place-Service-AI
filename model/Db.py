@@ -17,6 +17,7 @@ class Db:
         has = utility.has_collection("picture_embedding")
         if has:
             self.database = Collection("picture_embedding")
+            print(f"Number of entities in Milvus: {self.database.num_entities}")  # check the num_entities
         else:
             print("Create databsae first")
 
@@ -45,7 +46,7 @@ class Db:
         for i,filename in enumerate(os.listdir(folder_path)):
             if (i%100 == 0):
                 print("Loading... : ", str(i)+f"/{self.num_entities}")
-            
+            print(filename)
             vc = Embedding_vec(filename)
             lat_list.append(vc.lat)
             lng_list.append(vc.lng)
@@ -90,3 +91,13 @@ class Db:
         self.database.release()
         self.database.drop_index()
 
+
+if __name__ == "__main__":
+    from Embedding_vec import Embedding_vec
+    # db에 삽입
+    db = Db()
+    db.cofig_schema()
+    db.insert()
+    db.index()
+
+    
