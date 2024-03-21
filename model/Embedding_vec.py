@@ -3,7 +3,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import numpy as np
-from utilfunc import extract_lat_lng_pan_to_filename
+from utility.utilfunc import extract_lat_lng_pan_to_filename
 
 class Embedding_vec:
 

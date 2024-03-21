@@ -5,10 +5,8 @@ import torch
 import torchvision.transforms as transforms
 from torchvision import models
 from PIL import Image
-import time,re
 import numpy as np
-from model.Embedding_vec import Embedding_vec
-from utilfunc import extract_lat_lng_pan_to_filename
+from utility.utilfunc import extract_lat_lng_pan_to_filename
 
 
 class Photo:
@@ -50,7 +48,7 @@ class Photo:
         }
 
         start_time = time.time()
-        result = database.search(vectors_to_search, "embeddings", search_params, limit=3, output_fields=['lat', 'lng', 'pan'])
+        result = database.search(vectors_to_search, "embeddings", search_params, limit=5, output_fields=['lat', 'lng', 'pan'])
         end_time = time.time()
 
         result_filename = []
@@ -60,9 +58,10 @@ class Photo:
                 result_filename.append(f"screenshot_lat_{hit.entity.get('lat')}_lng_{hit.entity.get('lng')}_pan_{int(hit.entity.get('pan'))}_output")
 
         print(self.search_latency_fmt.format(end_time - start_time))
-        print(result_filename)
+        # print(result_filename)
         
-        location_info = extract_lat_lng_pan_to_filename(result_filename[0])
+        location_info = list(map(extract_lat_lng_pan_to_filename, result_filename))
+        # location_info = extract_lat_lng_pan_to_filename(result_filename[0])
 
         return location_info
 
