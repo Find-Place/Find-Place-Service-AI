@@ -8,7 +8,7 @@ from PIL import Image
 import time,re
 import numpy as np
 from model.Embedding_vec import Embedding_vec
-from utilfunc import extract_lat_lng_span_to_filename
+from utilfunc import extract_lat_lng_pan_to_filename
 
 
 class Photo:
@@ -62,8 +62,8 @@ class Photo:
         print(self.search_latency_fmt.format(end_time - start_time))
         print(result_filename)
         
-        location_info = extract_lat_lng_span_to_filename(result_filename[0])
+        location_info = extract_lat_lng_pan_to_filename(result_filename[0])
 
-        return location_info[0], location_info[1]
+        return location_info
 
 

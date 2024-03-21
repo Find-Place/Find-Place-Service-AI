@@ -1,5 +1,5 @@
 import re
-def extract_lat_lng_span_to_filename(filename):
+def extract_lat_lng_pan_to_filename(filename):
     pattern = r'lat_(?P<latitude>-?\d+\.\d+)_lng_(?P<longitude>-?\d+\.\d+)_pan_(?P<pan>-?\d+)_output'
         
     # 정규식을 사용하여 문자열에서 값 추출

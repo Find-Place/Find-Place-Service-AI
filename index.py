@@ -20,16 +20,23 @@ def open_url_in_default_browser(url):
     webbrowser.open(url)
 
 
-db = Db().database
+# db = Db().database
 
+# a = Db()
+# a.cofig_schema()
+# a.insert()
+# a.index()
+
+db = Db().database
 print("connect db")
 db.load()
+
 
 print("uploading photo")
 uploading_photo = Photo('jeongmun.png')
 
 print("Start to serach most smilarilty vector")
-lat,lng = uploading_photo.search_similar_vector(db)
+lat,lng,pan = uploading_photo.search_similar_vector(db)
 
 
 google_maps_url = generate_google_maps_url(lat,lng)
