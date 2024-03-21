@@ -1,18 +1,12 @@
 import re, os, json
 import numpy as np
+from utilfunc import extract_lat_lng_span_to_filename
 
 class Embedding_vec:
 
     def __init__(self, file_name) -> None:
-        pattern = r'lat_(?P<latitude>-?\d+\.\d+)_lng_(?P<longitude>-?\d+\.\d+)_pan_(?P<pan>-?\d+)_output'
-        
-        # 정규식을 사용하여 문자열에서 값 추출
-        match = re.search(pattern, file_name)
-        
-        # 추출된 값들을 변수에 저장
-        self.lat = float(match.group('latitude'))
-        self.lng = float(match.group('longitude'))
-        self.pan = int(match.group('pan'))
+        location_info = extract_lat_lng_span_to_filename(file_name)
+        self.lat, self.lng, self.span = location_info
         
         folder_path = '../embedding_vector/'
         

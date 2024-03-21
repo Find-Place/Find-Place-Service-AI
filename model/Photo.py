@@ -8,6 +8,8 @@ from PIL import Image
 import time,re
 import numpy as np
 from model.Embedding_vec import Embedding_vec
+from utilfunc import extract_lat_lng_span_to_filename
+
 
 class Photo:
     pk_num = 0
@@ -60,16 +62,8 @@ class Photo:
         print(self.search_latency_fmt.format(end_time - start_time))
         print(result_filename)
         
-        pattern = r'lat_(?P<latitude>-?\d+\.\d+)_lng_(?P<longitude>-?\d+\.\d+)_pan_(?P<pan>-?\d+)_output'
-        
-        # 정규식을 사용하여 문자열에서 값 추출
-        match = re.search(pattern, result_filename[0])
-        
-        # 추출된 값들을 변수에 저장
-        lat = float(match.group('latitude'))
-        lng = float(match.group('longitude'))
-        pan = int(match.group('pan'))
+        location_info = extract_lat_lng_span_to_filename(result_filename[0])
 
-        return lat, lng
+        return location_info[0], location_info[1]
 
 

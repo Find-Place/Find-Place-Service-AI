@@ -20,11 +20,10 @@ def open_url_in_default_browser(url):
     webbrowser.open(url)
 
 
-database = Db().database
-database.load()
+db = Db().database
 
 print("connect db")
-db = database
+db.load()
 
 print("uploading photo")
 uploading_photo = Photo('jeongmun.png')
