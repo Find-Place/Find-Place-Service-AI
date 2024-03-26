@@ -17,8 +17,8 @@ def sendImage():
 
     uploading_photo = Photo("uploaded_image.jpg")
 
-    result = uploading_photo.search_similar_vector(db)
-
-    return jsonify({"data": result, "status": HTTPStatus.OK})
+    result,latency = uploading_photo.search_similar_vector(db)
+    print("result : ", result)
+    return jsonify({"data": result, "latency" : latency, "status": HTTPStatus.OK})
 
 app.run(debug=True, host="localhost",port=5001)

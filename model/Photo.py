@@ -51,18 +51,23 @@ class Photo:
         result = database.search(vectors_to_search, "embeddings", search_params, limit=5, output_fields=['lat', 'lng', 'pan'])
         end_time = time.time()
 
-        result_filename = []
+        location_info = []
+
         for hits in result:
-            for hit in hits:
+            for i, hit in enumerate(hits):
                 # print(f"hit: {hit}, lat field: {hit.entity.get('lat')}, lng field: {hit.entity.get('lng')}, pan field: {hit.entity.get('pan')}")
-                result_filename.append(f"screenshot_lat_{hit.entity.get('lat')}_lng_{hit.entity.get('lng')}_pan_{int(hit.entity.get('pan'))}_output")
+                # location_info.append(f"screenshot_lat_{hit.entity.get('lat')}_lng_{hit.entity.get('lng')}_pan_{int(hit.entity.get('pan'))}_output")
+                loc_dic = {
+                    "rank": i+1,
+                    "lat" : hit.entity.get('lat'),
+                    "lng" : hit.entity.get('lng'),
+                    "pan" : hit.entity.get('pan')
+                }
+                location_info.append(loc_dic)
+        latency = end_time - start_time
+        latency_fm = self.search_latency_fmt.format(latency)
+        print(latency_fm)
 
-        print(self.search_latency_fmt.format(end_time - start_time))
-        # print(result_filename)
-        
-        location_info = list(map(extract_lat_lng_pan_to_filename, result_filename))
-        # location_info = extract_lat_lng_pan_to_filename(result_filename[0])
-
-        return location_info
+        return location_info, latency
 
 
