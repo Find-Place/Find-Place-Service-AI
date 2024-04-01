@@ -13,3 +13,16 @@ def extract_lat_lng_pan_to_filename(filename):
         "pan": int(match.group('pan'))
     } 
     return result_dict
+
+
+def generate_google_maps_url(*coordinates):
+    lat, lng = coordinates
+
+    # 위도 및 경도를 Google Maps의 URL 형식에 맞게 변환
+    lat_str = f"{lat:.7f}"
+    lng_str = f"{lng:.7f}"
+
+    # URL 생성
+    url = f"https://www.google.co.kr/maps/place/{lat_str}N%20{lng_str}E"
+    return url
+
