@@ -6,7 +6,6 @@ import torchvision.transforms as transforms
 from torchvision import models
 from PIL import Image
 import numpy as np
-from utility.utilfunc import extract_lat_lng_pan_to_filename
 
 
 class Photo:
